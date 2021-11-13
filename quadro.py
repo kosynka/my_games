@@ -59,8 +59,8 @@ class Node:
         self.y = int(col * width)
         self.occupied = None
 
-    def draw(self, WIN):
-        pygame.draw.rect(WIN, self.colour, (self.x, self.y, WIDTH / 8, WIDTH / 8))
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.colour, (self.x, self.y, WIDTH / 8, WIDTH / 8))
 
     def setup(self, WIN):
         if starting_order[(self.row, self.col)]:
@@ -89,6 +89,10 @@ def Do_Move(OriginalPos, FinalPosition, screen):
     starting_order[OriginalPos] = None
 '''
 
+size_block = 100
+board_width = board_height = size_block * 4
+massiv = [[0]*4 for i in range(4)]
+
 running = True
 while running:
     ### grid = make_grid(4, screen) ###
@@ -102,6 +106,12 @@ while running:
             mouse_pos = event.pos
             curObj.followMouse = True
             curObj.followMouseOffset = [mouse_pos[0] - curObj.pos[0], mouse_pos[1] - curObj.pos[1]]
+
+    for row in range(4):
+        for col in range(4):
+            x = col*size_block
+            y = row*size_block
+            pygame.draw.rect(screen, white, (x, y, size_block, size_block))
     
     # надпись наверху окна
     label = myfont.render("Привет. Чтобы начать играть перетасивайте фигуры мышкой по очереди", 1, black)
