@@ -3,7 +3,7 @@ import tkinter as tk
 
 class MyButton(tk.Button):
 
-    def __init__(self, master, x, y, number, *args, **kwargs):
+    def __init__(self, master, x, y, number=0, *args, **kwargs):
         super(MyButton, self).__init__(master,  width=4, font='Calibri 15 bold', *args, **kwargs)
         self.x = x
         self.y = y
@@ -23,19 +23,36 @@ class MineSweeper:
 
     def __init__(self):
         self.buttons = []
-        count = 1
-        for i in range(MineSweeper.ROWS):
+        for i in range(MineSweeper.ROWS+2):
             temp = []
-            for j in range(MineSweeper.COLUMNS):
-                button = MyButton(MineSweeper.window, x=i, y=j, number=count)
+            for j in range(MineSweeper.COLUMNS+2):
+                button = MyButton(MineSweeper.window, x=i, y=j)
+                button.config(command=lambda btn=button: self.click(btn))
                 temp.append(button)
-                count += 1
             self.buttons.append(temp)
-    
+
+    def click(self, clicked_button:MyButton):
+        print(clicked_button)
+        if clicked_button.is_mine:
+            clicked_button.config(text='*', background='red', disabledforeground='black')
+        else:
+            clicked_button.config(text=clicked_button.number, disabledforeground='black')
+        clicked_button.config(state='disabled')
+
     def create_widgets(self):
-        for i in range(MineSweeper.ROWS):
-            for j in range(MineSweeper.COLUMNS):
+        for i in range(MineSweeper.ROWS+2):
+            for j in range(MineSweeper.COLUMNS+2):
                 button = self.buttons[i][j]
+                button.grid(row=i, column=j)
+
+    def open_all_buttons(self):
+        for i in range(MineSweeper.ROWS+2):
+            for j in range(MineSweeper.COLUMNS+2):
+                button = self.buttons[i][j]
+                if button.is_mine:
+                    button.config(text='*', background='red', disabledforeground='black')
+                else:
+                    button.config(text=button.number, disabledforeground='black')
                 button.grid(row=i, column=j)
 
     def print_buttons(self):
@@ -51,15 +68,20 @@ class MineSweeper:
     def insert_mines(self):
         index_mines = self.get_mines_places()
         print(index_mines)
-        for row_button in self.buttons:
-            for button in row_button:
+        count = 1
+        for i in range(1, MineSweeper.ROWS+1):
+            for j in range(1, MineSweeper.COLUMNS+1):
+                button = self.buttons[i][j]
+                button.number = count
                 if button.number in index_mines:
                     button.is_mine = True
+                count += 1
     
     def start_game(self):
         self.create_widgets()
         self.insert_mines()
         self.print_buttons()
+        self.open_all_buttons()
 
         MineSweeper.window.mainloop()
 
