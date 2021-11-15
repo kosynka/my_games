@@ -1,5 +1,6 @@
 from random import shuffle
 import tkinter as tk
+from typing import MappingView
 
 colors = {
     1: '#00ff00',
@@ -15,12 +16,13 @@ colors = {
 class MyButton(tk.Button):
 
     def __init__(self, master, x, y, number=0, *args, **kwargs):
-        super(MyButton, self).__init__(master,  width=3, font='Calibri 15 bold', *args, **kwargs)
+        super(MyButton, self).__init__(master,  width=3, font='Calibri 16 bold', *args, **kwargs)
         self.x = x
         self.y = y
         self.number = number
         self.is_mine = False
         self.count_bomb = 0
+        self.is_open = False
 
     def __repr__(self):
         return f'MyButton{self.x}{self.y} {self.number} {self.is_mine}'
@@ -30,8 +32,8 @@ class MyButton(tk.Button):
 class MineSweeper:
 
     window = tk.Tk()
-    ROWS = COLUMNS = 15
-    MINES = 50
+    ROWS = COLUMNS = 10
+    MINES = 20
 
     def __init__(self):
         self.buttons = []
@@ -43,13 +45,44 @@ class MineSweeper:
                 temp.append(button)
             self.buttons.append(temp)
 
+    def breadth_first_sort(self, button: MyButton):
+        queue = [button]
+        while queue:
+            cur_button = queue.pop()
+            color = colors.get(cur_button.count_bomb, 'black')
+            if cur_button.count_bomb:
+                cur_button.config(text=cur_button.count_bomb, disabledforeground=color)
+            else:
+                cur_button.config(text='', disabledforeground=color)
+            cur_button.is_open = True
+            cur_button.config(state='disabled')
+            cur_button.config(relief=tk.SUNKEN)
+
+            if cur_button.count_bomb == 0:
+                x, y = cur_button.x, cur_button.y
+                for dx in (-1, 0, 1):
+                    for dy in (-1, 0, 1):
+                        if not abs(dx-dy) == 1:
+                            continue
+                        next_button = self.buttons[x + dx][y + dy]
+                        if not next_button.is_open and (1 <= next_button.x <= MineSweeper.ROWS and \
+                            1 <= next_button.y <= MineSweeper.COLUMNS and next_button not in queue) :
+                            queue.append(next_button)
+
     def click(self, clicked_button:MyButton):
-        print(clicked_button)
         if clicked_button.is_mine:
             clicked_button.config(text='*', background='red', disabledforeground='black')
+            clicked_button.is_open = True
         else:
-            clicked_button.config(text=clicked_button.number, disabledforeground='black')
+            color = colors.get(clicked_button.count_bomb, 'black')
+            if clicked_button.count_bomb:
+                clicked_button.config(text=clicked_button.count_bomb, disabledforeground=color)
+                clicked_button.is_open = True
+            else:
+                self.breadth_first_sort(clicked_button)
+                # clicked_button.config(text='', disabledforeground=color)
         clicked_button.config(state='disabled')
+        clicked_button.config(relief=tk.SUNKEN)
 
     def create_widgets(self):
         for i in range(1, MineSweeper.ROWS + 1):
@@ -113,7 +146,7 @@ class MineSweeper:
         self.insert_mines()
         self.count_mines_in_cells()
         self.print_buttons()
-        self.open_all_buttons()
+        # self.open_all_buttons()
 
         MineSweeper.window.mainloop()
 
