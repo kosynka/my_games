@@ -45,8 +45,19 @@ class MineSweeper:
             for j in range(MineSweeper.COLUMNS + 2):
                 button = MyButton(MineSweeper.window, x=i, y=j)
                 button.config(command=lambda btn=button: self.click(btn))
+                button.bind('<Button-3>', self.right_click)
                 temp.append(button)
             self.buttons.append(temp)
+
+    def right_click(self, event):
+        cur_button = event.widget
+        if cur_button['state'] == 'normal':
+            cur_button['state'] = 'disable'
+            cur_button['text'] = '🚩'
+            cur_button['disabledforeground'] = 'red'
+        elif cur_button['text'] == '🚩':
+            cur_button['text'] = ''
+            cur_button['state'] = 'normal'
 
     def breadth_first_sort(self, button: MyButton):
         queue = [button]
